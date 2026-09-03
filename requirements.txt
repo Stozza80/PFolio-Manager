@@ -1,0 +1,5 @@
+openpyxl>=3.1        # xlsx reading (Directa, BNL)
+xlrd>=2.0            # legacy binary .xls reading (Fineco)
+yfinance>=0.2        # market quote refresh
+requests>=2.31       # FX rate API calls (Frankfurter) + Borsa Italiana MOT scraping
+beautifulsoup4>=4.12 # HTML parsing for the Borsa Italiana MOT bond price scraper

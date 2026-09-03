@@ -216,3 +216,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# PFolio-Manager: confidential portfolio data — never commit
+/raw_reports/*
+!/raw_reports/.gitkeep
+/data/*
+!/data/.gitkeep
+
+# Safety net: stray broker export files must never live at repo root
+/*.xlsx
+/*.xls
+
+# Office lock files left behind when a report is open for inspection
+.~lock.*#
