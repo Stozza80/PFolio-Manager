@@ -75,6 +75,11 @@ class Holding:
     quote_source: str = "broker_report"
     yfinance_ticker: Optional[str] = None
     quote_status: str = "ok"  # ok | unmapped | lookup_failed
+    # Curated per-ISIN metadata (config/isin_ticker_map.json), applied by
+    # quotes.enrich_metadata — not derived from the broker report itself.
+    asset_class: Optional[str] = None  # Azionario | Obbligazionario | Bilanciato/Flessibile | Altro
+    asset_subclass: Optional[str] = None  # finer-grained category, e.g. "Azionario USA"
+    description: Optional[str] = None
 
     def to_dict(self) -> dict:
         return asdict(self)

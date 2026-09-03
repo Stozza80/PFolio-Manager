@@ -206,3 +206,17 @@ def refresh_all(
         save_map(mapping, map_path)
 
     return summary
+
+
+def enrich_metadata(holdings: list[dict], map_path: Path = DEFAULT_MAP_PATH) -> None:
+    """Apply curated per-ISIN `asset_class`/`asset_subclass`/`description` from the mapping
+    file to every holding in place. Local lookup only, no network calls — safe to run on
+    every CLI invocation (ingestion or quote-refresh) so metadata never goes stale relative
+    to the curated config, regardless of which branch actually ran.
+    """
+    mapping = load_map(map_path)
+    for holding in holdings:
+        entry = mapping.get(holding.get("isin")) or {}
+        holding["asset_class"] = entry.get("asset_class")
+        holding["asset_subclass"] = entry.get("asset_subclass")
+        holding["description"] = entry.get("description")

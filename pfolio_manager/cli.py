@@ -60,6 +60,7 @@ def run() -> int:
             except (detect.DetectionError, ParserError) as exc:
                 errors.append((file_path.name, str(exc)))
 
+        quotes.enrich_metadata(portfolio["holdings"])
         store.save(portfolio)
 
         print("\n=== Riepilogo ingestion ===")
@@ -83,6 +84,7 @@ def run() -> int:
     else:
         print("Nessun nuovo file trovato in raw_reports/ — aggiorno solo le quotazioni.")
         quote_summary = quotes.refresh_all(portfolio["holdings"])
+        quotes.enrich_metadata(portfolio["holdings"])
         store.save(portfolio)
 
         print("\n=== Riepilogo refresh quotazioni ===")

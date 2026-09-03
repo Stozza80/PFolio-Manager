@@ -20,11 +20,14 @@ HEADERS = [
     "Broker",
     "Strumento",
     "ISIN",
+    "Asset Class",
+    "Sottocategoria",
     "Valuta",
     "Quotazione",
     "Quotazione (EUR)",
     "Controvalore (EUR)",
     "Aggiornata al",
+    "Descrizione",
 ]
 
 
@@ -45,11 +48,14 @@ def build_workbook(holdings: list[dict]) -> Workbook:
                 h.get("broker"),
                 h.get("instrument_name"),
                 h.get("isin"),
+                h.get("asset_class"),
+                h.get("asset_subclass"),
                 h.get("currency"),
                 price,
                 price_eur,
                 h.get("market_value_eur"),
                 h.get("quote_last_refreshed_at") or h.get("as_of_date"),
+                h.get("description"),
             ]
         )
 
