@@ -19,7 +19,7 @@ from typing import Optional
 
 import yfinance as yf
 
-from . import fx, scraper
+from . import fx, scraper, util
 
 DEFAULT_MAP_PATH = Path("config/isin_ticker_map.json")
 
@@ -119,7 +119,8 @@ def refresh_holding(holding: dict, mapping: dict, cache_path: Path = fx.DEFAULT_
         return mapping_changed
 
     source = entry.get("source", "yfinance")
-    as_of_date = datetime.now(timezone.utc).date().isoformat()
+    quote_as_of_date = util.market_as_of_date()
+    as_of_date = quote_as_of_date.isoformat()
     holding_currency = holding.get("currency", "EUR")
 
     if source == "mot_bond":
@@ -180,6 +181,7 @@ def refresh_holding(holding: dict, mapping: dict, cache_path: Path = fx.DEFAULT_
     holding["fx_rate_used"] = fx_rate_used
     holding["fx_rate_source"] = fx_rate_source
     holding["quote_last_refreshed_at"] = datetime.now(timezone.utc).isoformat()
+    holding["quote_as_of_date"] = as_of_date
     holding["quote_source"] = source
     holding["yfinance_ticker"] = quote_ref
     holding["quote_status"] = "ok"

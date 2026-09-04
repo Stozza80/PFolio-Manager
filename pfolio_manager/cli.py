@@ -61,6 +61,7 @@ def run() -> int:
                 errors.append((file_path.name, str(exc)))
 
         quotes.enrich_metadata(portfolio["holdings"])
+        daily_snapshot = store.save_daily_snapshot(portfolio)
         store.save(portfolio)
 
         print("\n=== Riepilogo ingestion ===")
@@ -85,9 +86,11 @@ def run() -> int:
         print("Nessun nuovo file trovato in raw_reports/ — aggiorno solo le quotazioni.")
         quote_summary = quotes.refresh_all(portfolio["holdings"])
         quotes.enrich_metadata(portfolio["holdings"])
+        daily_snapshot = store.save_daily_snapshot(portfolio)
         store.save(portfolio)
 
         print("\n=== Riepilogo refresh quotazioni ===")
+        print(f"Snapshot giornaliero salvato per il {daily_snapshot['as_of_date']}.")
         print(
             f"ok: {quote_summary['ok']}, non mappati: {quote_summary['unmapped']}, "
             f"lookup falliti: {quote_summary['lookup_failed']}"

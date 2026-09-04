@@ -72,6 +72,7 @@ class Holding:
     source_file: str
     parsed_at: str
     quote_last_refreshed_at: Optional[str] = None
+    quote_as_of_date: Optional[str] = None  # trading day the quote reflects (util.market_as_of_date)
     quote_source: str = "broker_report"
     yfinance_ticker: Optional[str] = None
     quote_status: str = "ok"  # ok | unmapped | lookup_failed
@@ -99,6 +100,23 @@ class Snapshot:
     source_file: str
     parsed_at: str
     lines: list[dict] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class DailySnapshot:
+    """Full copy of every holding for one trading day — one entry per calendar day,
+    covering both report-ingestion days and quote-refresh-only days. Distinct from
+    `Snapshot`, which is per broker/account and only created on report ingestion.
+    """
+
+    as_of_date: str  # trading day the quotes reflect (util.market_as_of_date)
+    generated_at: str  # wall-clock timestamp this snapshot was actually written
+    total_value_eur: Optional[float]
+    holdings: list[dict] = field(default_factory=list)
+    note: Optional[str] = None  # set when reconstructed after the fact rather than captured live
 
     def to_dict(self) -> dict:
         return asdict(self)

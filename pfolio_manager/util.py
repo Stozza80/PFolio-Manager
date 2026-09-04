@@ -3,11 +3,29 @@ from __future__ import annotations
 
 import hashlib
 import re
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
 _EXCEL_EPOCH = datetime(1899, 12, 30)  # absorbs Excel's 1900 leap-year bug
+
+
+def market_as_of_date(now: Optional[datetime] = None) -> date:
+    """Best-effort trading day a quote fetched at `now` reflects.
+
+    No market-calendar/holiday lookups, and no intraday data is available anyway
+    (not doing short-term trading here) — good enough is a fixed 4h offset (so a
+    fetch shortly after midnight still counts as the prior day's close) plus a
+    weekend rollback to the preceding Friday.
+    """
+    if now is None:
+        now = datetime.now(timezone.utc)
+    d = (now - timedelta(hours=4)).date()
+    if d.weekday() == 5:  # Saturday
+        d -= timedelta(days=1)
+    elif d.weekday() == 6:  # Sunday
+        d -= timedelta(days=2)
+    return d
 
 
 def parse_it_number(text: str) -> float:

@@ -1,12 +1,14 @@
-"""Load/save the normalized JSON store (data/portfolio.json): holdings, snapshots, ingested_sources."""
+"""Load/save the normalized JSON store (data/portfolio.json): holdings, snapshots,
+daily_snapshots, ingested_sources."""
 from __future__ import annotations
 
 import json
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
 from . import fx
-from .models import SCHEMA_VERSION, Holding, ParsedReport, Snapshot, holding_natural_key
+from .models import SCHEMA_VERSION, DailySnapshot, Holding, ParsedReport, Snapshot, holding_natural_key
 
 DEFAULT_STORE_PATH = Path("data/portfolio.json")
 
@@ -17,6 +19,7 @@ def _empty_store() -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "holdings": [],
         "snapshots": [],
+        "daily_snapshots": [],
         "ingested_sources": [],
     }
 
@@ -142,3 +145,37 @@ def ingest_report(
         "computed_total_eur": total_value_eur,
         "stated_total_native": report.total_value_native,
     }
+
+
+def _infer_daily_snapshot_date(holdings: list[dict]) -> str:
+    """Trading day the whole batch of holdings reflects: majority vote across each
+    holding's `quote_as_of_date` (set by a quote refresh), falling back to its
+    `as_of_date` (the broker report date) for holdings never quote-refreshed yet.
+    """
+    dates = [h.get("quote_as_of_date") or h.get("as_of_date") for h in holdings]
+    dates = [d for d in dates if d]
+    if not dates:
+        return datetime.now(timezone.utc).date().isoformat()
+    return Counter(dates).most_common(1)[0][0]
+
+
+def save_daily_snapshot(store: dict) -> dict:
+    """Append (or replace, if one already exists for the same day) a full copy of every
+    holding as a `daily_snapshots` entry — called after both ingestion and quote-refresh
+    runs so the portfolio's day-by-day history keeps accumulating either way.
+    """
+    holdings = store["holdings"]
+    as_of_date = _infer_daily_snapshot_date(holdings)
+    total_value_eur = sum(h.get("market_value_eur") or 0.0 for h in holdings)
+
+    snapshot = DailySnapshot(
+        as_of_date=as_of_date,
+        generated_at=datetime.now(timezone.utc).isoformat(),
+        total_value_eur=total_value_eur,
+        holdings=[dict(h) for h in holdings],
+    ).to_dict()
+
+    store.setdefault("daily_snapshots", [])
+    store["daily_snapshots"] = [s for s in store["daily_snapshots"] if s["as_of_date"] != as_of_date]
+    store["daily_snapshots"].append(snapshot)
+    return snapshot
