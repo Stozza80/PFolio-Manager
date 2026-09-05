@@ -1,9 +1,11 @@
 """Market-quote refresh via Yahoo Finance (yfinance) or the Borsa Italiana MOT scraper
-(pfolio_manager.scraper), keyed by a curated ISIN->quote-source map.
+(pfolio_manager.scraper), keyed by a curated ISIN->quote-source map. Writes into the
+`quotations` table (SQLite) — the only writer of that table, by design (see
+project decision: ingestion must never let a broker-stated price become a quotation).
 
 Never guesses a ticker/source from an ISIN or broker-supplied symbol: an ISIN not yet
-present in the mapping file gets a `needs_mapping` placeholder entry (and the holding is
-flagged `unmapped`) so the user can curate it over time, rather than silently failing or
+present in the mapping file gets a `needs_mapping` placeholder entry (and the instrument
+is flagged `unmapped`) so the user can curate it over time, rather than silently failing or
 fabricating a lookup. Confirmed during development that not all instruments are on Yahoo
 Finance (e.g. some Frankfurt-listed ETF tickers 404, single bonds generally aren't there
 at all) — those surface as `lookup_failed`/`unmapped`, never as a stale or fabricated price.
@@ -13,13 +15,13 @@ Bonds not on Yahoo Finance are often findable via the MOT scraper instead (sourc
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+import sqlite3
 from pathlib import Path
 from typing import Optional
 
 import yfinance as yf
 
-from . import fx, scraper, util
+from . import db, fx, scraper
 
 DEFAULT_MAP_PATH = Path("config/isin_ticker_map.json")
 
@@ -105,23 +107,24 @@ def _convert_price_currency(
     return value_eur / to_eur_rate
 
 
-def refresh_holding(holding: dict, mapping: dict, cache_path: Path = fx.DEFAULT_CACHE_PATH) -> bool:
-    """Refresh a single holding dict in place. Returns True if the mapping dict was changed."""
-    isin = holding.get("isin")
-    if not isin:
-        holding["quote_status"] = "unmapped"
-        return False
-
-    entry, mapping_changed = _get_mapped_entry(isin, holding.get("instrument_name", ""), mapping)
+def _refresh_instrument(
+    conn: sqlite3.Connection,
+    instrument_id: int,
+    isin: str,
+    instrument_name: str,
+    currency: str,
+    mapping: dict,
+    as_of_date: str,
+    cache_path: Path,
+) -> tuple[str, bool]:
+    """Fetch and upsert one instrument's quote for `as_of_date`. Returns (status,
+    mapping_changed); status is "ok" | "unmapped" | "lookup_failed".
+    """
+    entry, mapping_changed = _get_mapped_entry(isin, instrument_name, mapping)
     if entry is None:
-        holding["quote_status"] = "unmapped"
-        holding["yfinance_ticker"] = None
-        return mapping_changed
+        return "unmapped", mapping_changed
 
     source = entry.get("source", "yfinance")
-    quote_as_of_date = util.market_as_of_date()
-    as_of_date = quote_as_of_date.isoformat()
-    holding_currency = holding.get("currency", "EUR")
 
     if source == "mot_bond":
         quote_ref = f"MOT:{isin}"
@@ -133,9 +136,7 @@ def refresh_holding(holding: dict, mapping: dict, cache_path: Path = fx.DEFAULT_
     elif source == "borsaitaliana_fund":
         fund_code = entry.get("ticker")  # holds the Borsa Italiana internal fund code
         if not fund_code:
-            holding["quote_status"] = "unmapped"
-            holding["yfinance_ticker"] = None
-            return mapping_changed
+            return "unmapped", mapping_changed
         quote_ref = f"BIT-FONDI:{fund_code}"
         price, price_currency = scraper.fetch_borsaitaliana_fund_quote(fund_code)
     elif source == "stockevents":
@@ -144,81 +145,80 @@ def refresh_holding(holding: dict, mapping: dict, cache_path: Path = fx.DEFAULT_
     else:
         ticker = entry.get("ticker")
         if not ticker:
-            holding["quote_status"] = "unmapped"
-            holding["yfinance_ticker"] = None
-            return mapping_changed
+            return "unmapped", mapping_changed
         quote_ref = ticker
         price, price_currency = _fetch_price(ticker)
 
     if price is None:
-        holding["quote_status"] = "lookup_failed"
-        holding["yfinance_ticker"] = quote_ref
-        return mapping_changed
+        return "lookup_failed", mapping_changed
 
-    if price_currency and price_currency != holding_currency:
-        converted = _convert_price_currency(price, price_currency, holding_currency, as_of_date, cache_path)
+    if price_currency and price_currency != currency:
+        converted = _convert_price_currency(price, price_currency, currency, as_of_date, cache_path)
         if converted is None:
-            holding["quote_status"] = "lookup_failed"
-            holding["yfinance_ticker"] = quote_ref
-            return mapping_changed
+            return "lookup_failed", mapping_changed
         price = converted
 
-    quantity = holding.get("quantity") or 0.0
-    market_value = quantity * price
-    market_value_eur, fx_rate_used, fx_rate_source = fx.resolve_eur_value(
-        market_value, holding_currency, as_of_date, cache_path=cache_path
+    # `price` is always a genuine per-unit price at this point (for mot_bond it was
+    # already divided by 100 above) so that quantity * close = market_value_native
+    # holds universally — no broker-display scaling stored in the DB.
+    conn.execute(
+        """
+        INSERT INTO quotations (instrument_id, date, close)
+        VALUES (?, ?, ?)
+        ON CONFLICT(instrument_id, date) DO UPDATE SET close=excluded.close
+        """,
+        (instrument_id, as_of_date, price),
     )
+    conn.execute("UPDATE instrument SET ticker = ? WHERE id = ?", (quote_ref, instrument_id))
 
-    # market_price is meant to read like the broker's own quote convention: for bonds
-    # that's "per 100 nominal" (e.g. 102.10, not 1.021) — currency conversion above was
-    # already applied to the per-unit `price`, so scaling back up by 100 here still
-    # reflects the converted value (the two operations commute).
-    display_price = price * 100 if source == "mot_bond" else price
-
-    holding["market_price"] = display_price
-    holding["market_value"] = market_value
-    holding["market_value_eur"] = market_value_eur
-    holding["fx_rate_used"] = fx_rate_used
-    holding["fx_rate_source"] = fx_rate_source
-    holding["quote_last_refreshed_at"] = datetime.now(timezone.utc).isoformat()
-    holding["quote_as_of_date"] = as_of_date
-    holding["quote_source"] = source
-    holding["yfinance_ticker"] = quote_ref
-    holding["quote_status"] = "ok"
-    return mapping_changed
+    return "ok", mapping_changed
 
 
 def refresh_all(
-    holdings: list[dict],
+    conn: sqlite3.Connection,
+    as_of_date: str,
     map_path: Path = DEFAULT_MAP_PATH,
     cache_path: Path = fx.DEFAULT_CACHE_PATH,
 ) -> dict:
-    """Refresh quotes for every holding in place. Returns a {status: count} summary."""
+    """Refresh quotes for every instrument in the DB. Returns a {status: count} summary."""
     mapping = load_map(map_path)
     mapping_changed = False
     summary = {"ok": 0, "unmapped": 0, "lookup_failed": 0}
+    flagged: list[tuple[str, str, str]] = []  # (isin, name, status)
 
-    for holding in holdings:
-        changed = refresh_holding(holding, mapping, cache_path)
+    instruments = conn.execute("SELECT id, isin, full_name, currency FROM instrument").fetchall()
+    for instrument_id, isin, full_name, currency in instruments:
+        status, changed = _refresh_instrument(
+            conn, instrument_id, isin, full_name, currency, mapping, as_of_date, cache_path
+        )
         mapping_changed = mapping_changed or changed
-        status = holding.get("quote_status", "lookup_failed")
         summary[status] = summary.get(status, 0) + 1
+        if status != "ok":
+            flagged.append((isin, full_name, status))
 
     if mapping_changed:
         save_map(mapping, map_path)
 
+    summary["flagged"] = flagged
     return summary
 
 
-def enrich_metadata(holdings: list[dict], map_path: Path = DEFAULT_MAP_PATH) -> None:
-    """Apply curated per-ISIN `asset_class`/`asset_subclass`/`description` from the mapping
-    file to every holding in place. Local lookup only, no network calls — safe to run on
-    every CLI invocation (ingestion or quote-refresh) so metadata never goes stale relative
-    to the curated config, regardless of which branch actually ran.
+def apply_curated_metadata(conn: sqlite3.Connection, map_path: Path = DEFAULT_MAP_PATH) -> None:
+    """Apply curated per-ISIN `asset_class` (-> asset_category FK) / `asset_subclass`
+    from the mapping file to every instrument. Local lookup only, no network calls —
+    safe to run on every CLI invocation (ingestion or quote-refresh) so metadata never
+    goes stale relative to the curated config, regardless of which branch actually ran.
+
+    A category name not yet seen (e.g. "Commodities" the day gold gets added) is
+    auto-created with a neutral placeholder color — curate its real color by hand
+    afterwards in the asset_category table.
     """
     mapping = load_map(map_path)
-    for holding in holdings:
-        entry = mapping.get(holding.get("isin")) or {}
-        holding["asset_class"] = entry.get("asset_class")
-        holding["asset_subclass"] = entry.get("asset_subclass")
-        holding["description"] = entry.get("description")
+    for instrument_id, isin in conn.execute("SELECT id, isin FROM instrument").fetchall():
+        entry = mapping.get(isin) or {}
+        category_name = entry.get("asset_class")
+        category_id = db.get_or_create_category(conn, category_name) if category_name else None
+        conn.execute(
+            "UPDATE instrument SET category_id = ?, asset_subclass = ? WHERE id = ?",
+            (category_id, entry.get("asset_subclass"), instrument_id),
+        )

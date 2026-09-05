@@ -1682,6 +1682,29 @@ h6,
 }
 
 /* =========== tables css =========== */
+.card-table-scroll {
+  max-height: 340px;
+  overflow-y: auto;
+}
+.card-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+}
+.name-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #fff;
+}
+.name-tag.name-tag-stock {
+  background: #eb5757;
+}
+.name-tag.name-tag-bond {
+  background: #49BEFF;
+}
 .table {
   border-collapse: inherit;
   border-spacing: 0px;

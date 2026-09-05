@@ -4,9 +4,9 @@
     "notes": "user-supplied, verified working",
     "status": "mapped",
     "ticker": "EXS1.DE",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario Germania",
-    "description": "ETF che replica l'indice DAX, comprendente i 40 maggiori titoli azionari tedeschi quotati sul segmento Prime Standard di Francoforte. Emittente iShares (BlackRock), replica fisica, ad accumulazione."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - Germany",
+    "description": "ETF tracking the DAX index, covering the 40 largest German equities listed on Frankfurt's Prime Standard segment. Issuer iShares (BlackRock), physical replication, accumulating."
   },
   "FR0010870956": {
     "name": "OAT TF 4% AP60 EUR",
@@ -14,9 +14,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Francia",
-    "description": "Obbligazione di Stato francese (OAT) a tasso fisso 4%, emessa da Agence France Trésor nel 2009, con scadenza 25 aprile 2060 e cedola annuale."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - France Government",
+    "description": "French government bond (OAT) with a fixed 4% coupon, issued by Agence France Trésor in 2009, maturing 25 April 2060, annual coupon."
   },
   "FR001400E0L6": {
     "name": "BNPP 4ITALY 2028 DIS",
@@ -24,72 +24,72 @@
     "status": "mapped",
     "source": "borsaitaliana_fund",
     "ticker": "2FADB801943",
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Italia (fondo a scadenza)",
-    "description": "BNP Paribas 4Italy 2028, fondo obbligazionario a scadenza di BNP Paribas AM France, investe in titoli di Stato italiani (BTP) con orizzonte a 5 anni fino al 2028 e distribuzione di reddito legata al rendimento dei BTP di riferimento."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Italy Government (Target Maturity Fund)",
+    "description": "BNP Paribas 4Italy 2028, a target-maturity bond fund by BNP Paribas AM France, investing in Italian government bonds (BTPs) with a 5-year horizon to 2028, with income distribution linked to the yield of the reference BTPs."
   },
   "IE000MINO564": {
     "name": "L&G EM Government Bond (USD) 0-5 Year Screened UCITS ETF EUR Hdg",
     "notes": "user-supplied, verified working",
     "status": "mapped",
     "ticker": "IE000MINO564.SG",
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Mercati Emergenti (USD, cambio coperto EUR)",
-    "description": "ETF di L&G che replica l'indice J.P. Morgan ESG EMBI Global Diversified Short-Term, investendo in obbligazioni governative in USD di paesi emergenti con scadenza fino a 5 anni, screening ESG e copertura cambio in EUR."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Emerging Markets Government (USD, EUR Hedged)",
+    "description": "L&G ETF tracking the J.P. Morgan ESG EMBI Global Diversified Short-Term index, investing in USD-denominated emerging-market government bonds maturing within 5 years, with ESG screening and EUR currency hedging."
   },
   "IE00B3ZW0K18": {
     "name": "iShares S&P 500 EUR Hedged UCITS ETF",
     "notes": "user-supplied, verified working",
     "status": "mapped",
     "ticker": "IUSE.L",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario USA (cambio coperto)",
-    "description": "ETF che replica l'indice S&P 500 (500 maggiori società USA) con copertura del rischio cambio USD/EUR su base mensile. Emittente iShares (BlackRock), ad accumulazione."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - USA (Currency Hedged)",
+    "description": "ETF tracking the S&P 500 index (the 500 largest US companies) with monthly USD/EUR currency-risk hedging. Issuer iShares (BlackRock), accumulating."
   },
   "IE00B4L5YX21": {
     "name": "iShares Core MSCI Japan IMI UCITS ETF USD (Acc)",
     "notes": "user-supplied, verified working; quotes in USD on LSE, converted to holding currency",
     "status": "mapped",
     "ticker": "IJPA.L",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario Giappone",
-    "description": "ETF ad accumulazione di iShares che replica l'indice MSCI Japan IMI, investendo in azioni giapponesi large, mid e small cap; quotazione in USD."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - Japan",
+    "description": "Accumulating iShares ETF tracking the MSCI Japan IMI index, investing in Japanese large-, mid- and small-cap equities; quoted in USD."
   },
   "IE00B53SZB19": {
     "name": "iShares NASDAQ-100 UCITS ETF",
     "notes": "user-supplied, verified working; quotes in USD, converted to holding currency",
     "status": "mapped",
     "ticker": "CSNDX.SW",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario USA Tecnologia",
-    "description": "ETF che replica l'indice Nasdaq-100, composto da 100 tra le maggiori società non finanziarie quotate al Nasdaq. Emittente iShares (BlackRock), replica fisica, ad accumulazione, denominato in USD."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - USA Technology",
+    "description": "ETF tracking the Nasdaq-100 index, made up of 100 of the largest non-financial companies listed on the Nasdaq. Issuer iShares (BlackRock), physical replication, accumulating, denominated in USD."
   },
   "IE00B5BMR087": {
     "name": "iShares Core S&P 500 UCITS ETF",
     "notes": "verified working during Phase-1 verification (Xetra listing, not Borsa Italiana)",
     "status": "mapped",
     "ticker": "SXR8.DE",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario USA",
-    "description": "ETF che replica l'indice S&P 500, comprendente le 500 maggiori società quotate negli Stati Uniti. Emittente iShares (BlackRock), replica fisica, ad accumulazione, denominato in USD."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - USA",
+    "description": "ETF tracking the S&P 500 index, covering the 500 largest companies listed in the United States. Issuer iShares (BlackRock), physical replication, accumulating, denominated in USD."
   },
   "IE00BK5BQT80": {
     "name": "Vanguard FTSE All-World UCITS ETF (USD) Acc",
     "notes": "user-supplied, verified working; quotes in USD on LSE, converted to holding currency",
     "status": "mapped",
     "ticker": "VWRA.L",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario Globale",
-    "description": "ETF ad accumulazione di Vanguard che replica l'indice FTSE All-World, investendo in azioni di mercati sviluppati ed emergenti a livello globale; quotazione in USD."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - Global",
+    "description": "Accumulating Vanguard ETF tracking the FTSE All-World index, investing in developed- and emerging-market equities globally; quoted in USD."
   },
   "IE00BLDGHT92": {
     "name": "UBS Euro Equity Defensive Put Write SF UCITS ETF EUR acc",
-    "notes": "user-supplied, verified working; reclassified to Azionario per user's domain knowledge (underlying exposure is European equities)",
+    "notes": "user-supplied, verified working; reclassified to Stock per user's domain knowledge (underlying exposure is European equities)",
     "status": "mapped",
     "ticker": "IE00BLDGHT92.SG",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario Europa (strategia put-write)",
-    "description": "ETF sintetico UBS che replica una strategia di vendita di opzioni put (put-write) sull'Euro Stoxx 50, abbinata a liquidità a breve termine, per generare reddito dai premi delle opzioni."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - Europe (Put-Write Strategy)",
+    "description": "Synthetic UBS ETF replicating a put-write options strategy on the Euro Stoxx 50, combined with short-term cash, to generate income from option premiums."
   },
   "IT0005530032": {
     "name": "BTP 4,45% 1/09/2043",
@@ -97,9 +97,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Italia",
-    "description": "Titolo di Stato italiano (BTP) emesso dal MEF, cedola fissa 4,45% annua pagata semestralmente, scadenza 1 settembre 2043."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Italy Government",
+    "description": "Italian government bond (BTP) issued by the Italian Treasury (MEF), fixed 4.45% annual coupon paid semi-annually, maturing 1 September 2043."
   },
   "IT0005534141": {
     "name": "BTP 4,50% 01/10/2053",
@@ -107,9 +107,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Italia",
-    "description": "Titolo di Stato italiano (BTP) emesso dal MEF, cedola fissa 4,50% annua pagata semestralmente, scadenza 1 ottobre 2053."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Italy Government",
+    "description": "Italian government bond (BTP) issued by the Italian Treasury (MEF), fixed 4.50% annual coupon paid semi-annually, maturing 1 October 2053."
   },
   "IT0005544082": {
     "name": "BTP 4,35% 01/11/2033",
@@ -117,9 +117,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Italia",
-    "description": "Titolo di Stato italiano (BTP) emesso dal MEF, cedola fissa 4,35% annua pagata semestralmente, scadenza 1 novembre 2033."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Italy Government",
+    "description": "Italian government bond (BTP) issued by the Italian Treasury (MEF), fixed 4.35% annual coupon paid semi-annually, maturing 1 November 2033."
   },
   "IT0005560948": {
     "name": "BTP 4,20% 01/03/2034",
@@ -127,9 +127,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Italia",
-    "description": "Titolo di Stato italiano (BTP) emesso dal MEF, cedola fissa 4,20% annua pagata semestralmente, scadenza 1 marzo 2034."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Italy Government",
+    "description": "Italian government bond (BTP) issued by the Italian Treasury (MEF), fixed 4.20% annual coupon paid semi-annually, maturing 1 March 2034."
   },
   "IT0005561888": {
     "name": "BTP 4% 15/11/2030",
@@ -137,9 +137,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Italia",
-    "description": "Titolo di Stato italiano (BTP) emesso dal MEF, cedola fissa 4% annua pagata semestralmente, scadenza 15 novembre 2030."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Italy Government",
+    "description": "Italian government bond (BTP) issued by the Italian Treasury (MEF), fixed 4% annual coupon paid semi-annually, maturing 15 November 2030."
   },
   "IT0005582421": {
     "name": "BTP 4,15% 01/10/2039",
@@ -147,9 +147,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Italia",
-    "description": "Titolo di Stato italiano (BTP) emesso dal MEF, cedola fissa 4,15% annua pagata semestralmente, scadenza 1 ottobre 2039."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Italy Government",
+    "description": "Italian government bond (BTP) issued by the Italian Treasury (MEF), fixed 4.15% annual coupon paid semi-annually, maturing 1 October 2039."
   },
   "IT0005611741": {
     "name": "BTP 4,30% 01/10/2054",
@@ -157,36 +157,36 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Italia",
-    "description": "Titolo di Stato italiano (BTP) emesso dal MEF, cedola fissa 4,30% annua pagata semestralmente, scadenza 1 ottobre 2054."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Italy Government",
+    "description": "Italian government bond (BTP) issued by the Italian Treasury (MEF), fixed 4.30% annual coupon paid semi-annually, maturing 1 October 2054."
   },
   "LU0290356871": {
     "name": "Xtrackers II Eurozone Government Bond 1-3 UCITS ETF 1C",
     "notes": "user-supplied, verified working",
     "status": "mapped",
     "ticker": "DBXP.DE",
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Eurozona Breve Termine",
-    "description": "ETF di Xtrackers (DWS) che replica l'indice iBoxx EUR Eurozone 1-3, investendo in titoli di Stato dell'Eurozona con scadenza residua tra 1 e 3 anni."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Eurozone Government (Short Term)",
+    "description": "Xtrackers (DWS) ETF tracking the iBoxx EUR Eurozone 1-3 index, investing in Eurozone government bonds with 1-3 years remaining to maturity."
   },
   "LU0478205379": {
     "name": "Xtrackers II EUR Corporate Bond UCITS ETF 1C",
     "notes": "user-supplied, verified working",
     "status": "mapped",
     "ticker": "D5BG.DE",
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Corporate Euro",
-    "description": "ETF di Xtrackers (DWS) che replica il Bloomberg Euro Corporate Bond Index, investendo in obbligazioni societarie investment grade in euro emesse da industria, utility e finanza."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Euro Corporate",
+    "description": "Xtrackers (DWS) ETF tracking the Bloomberg Euro Corporate Bond Index, investing in euro-denominated investment-grade corporate bonds issued by industrial, utility and financial companies."
   },
   "LU0514695690": {
     "name": "Xtrackers MSCI China UCITS ETF 1C",
     "notes": "user-supplied, verified working; quotes in USD, converted to holding currency",
     "status": "mapped",
     "ticker": "LU0514695690-USD.LU",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario Cina",
-    "description": "ETF che replica l'indice MSCI China, comprendente le principali azioni cinesi (A-shares, H-shares, B-shares, Red chips, P chips). Emittente Xtrackers (DWS), replica fisica, ad accumulazione (classe 1C)."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - China",
+    "description": "ETF tracking the MSCI China index, covering major Chinese equities (A-shares, H-shares, B-shares, Red chips, P chips). Issuer Xtrackers (DWS), physical replication, accumulating (1C share class)."
   },
   "LU0823380802": {
     "name": "BNPP FUNDS EUR HIGH",
@@ -194,19 +194,19 @@
     "status": "mapped",
     "source": "borsaitaliana_fund",
     "ticker": "2FADB161685",
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario High Yield Euro",
-    "description": "BNP Paribas Funds Euro High Yield Bond, gestito da BNP Paribas AM: fondo obbligazionario che investe in obbligazioni societarie high yield denominate in euro, benchmark ICE BofA Euro High Yield BB-B Constrained."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Euro High Yield",
+    "description": "BNP Paribas Funds Euro High Yield Bond, managed by BNP Paribas AM: a bond fund investing in euro-denominated high-yield corporate bonds, benchmarked against the ICE BofA Euro High Yield BB-B Constrained index."
   },
   "LU3121820099": {
     "name": "BNP PARIBAS GLOB.ACC",
-    "notes": "verified working via stockevents.app (ISIN-parameterized, no separate code needed); reclassified to Obbligazionario per user request",
+    "notes": "verified working via stockevents.app (ISIN-parameterized, no separate code needed); reclassified to Bonds per user request",
     "status": "mapped",
     "source": "stockevents",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Flessibile Globale (Absolute Return)",
-    "description": "BNP Paribas Funds Global Absolute Return Bond (classe K), gestito da BNP Paribas AM: strategia obbligazionaria flessibile \"absolute return\" che alloca dinamicamente tra regioni, settori, duration e valute per superare il money market euro su 3 anni."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Global Flexible (Absolute Return)",
+    "description": "BNP Paribas Funds Global Absolute Return Bond (K share class), managed by BNP Paribas AM: a flexible \"absolute return\" bond strategy that dynamically allocates across regions, sectors, duration and currencies, aiming to beat the euro money market over 3 years."
   },
   "LU3227838094": {
     "name": "BNP PAR. FLEX DISTR",
@@ -214,18 +214,18 @@
     "status": "mapped",
     "source": "stockevents",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Flessibile a Scadenza",
-    "description": "Fondo obbligazionario a scadenza (BNP Paribas Flexi I - Obliselect Euro Sept 2031, gestito da BNP Paribas AM), investe in titoli obbligazionari in euro con possibilità di emittenti high yield e mercati emergenti, obiettivo di rendimento a scadenza settembre 2031."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Flexible Maturity",
+    "description": "Target-maturity bond fund (BNP Paribas Flexi I - Obliselect Euro Sept 2031, managed by BNP Paribas AM), investing in euro-denominated bonds with potential exposure to high-yield and emerging-market issuers, targeting a yield-to-maturity in September 2031."
   },
   "NL00150001Q9": {
     "name": "STELLANTIS NV",
     "notes": "verified working during Phase-1 verification",
     "status": "mapped",
     "ticker": "STLAM.MI",
-    "asset_class": "Azionario",
-    "asset_subclass": "Azionario Europa (singolo titolo - Automotive)",
-    "description": "Azione ordinaria del gruppo automobilistico Stellantis, nato dalla fusione tra Fiat Chrysler Automobiles e Groupe PSA, quotata a Milano (STLAM), Parigi e New York."
+    "asset_class": "Stock",
+    "asset_subclass": "Stock - Europe (Single Stock - Automotive)",
+    "description": "Ordinary share of the Stellantis automotive group, formed from the merger of Fiat Chrysler Automobiles and Groupe PSA, listed in Milan (STLAM), Paris and New York."
   },
   "US731011AW25": {
     "name": "POLAND FX 5.5% APR53 CALL USD",
@@ -233,9 +233,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Polonia (USD)",
-    "description": "Obbligazione sovrana della Polonia a tasso fisso 5,5%, in USD, emessa il 4 aprile 2023, con scadenza 4 aprile 2053, cedola semestrale e clausola di rimborso anticipato (callable) a favore dell'emittente."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Poland Government (USD)",
+    "description": "Polish sovereign bond with a fixed 5.5% coupon, denominated in USD, issued on 4 April 2023, maturing 4 April 2053, semi-annual coupon, callable by the issuer."
   },
   "XS2971937672": {
     "name": "HUNGARY GREEN FX 4.875% MAR40 EUR",
@@ -243,9 +243,9 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Ungheria (Green Bond)",
-    "description": "Obbligazione sovrana \"green\" dell'Ungheria a tasso fisso 4,875%, in EUR, emessa a gennaio 2025, con scadenza 22 marzo 2040 e cedola annuale; non richiamabile (non-callable)."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Hungary Government (Green Bond)",
+    "description": "Hungarian sovereign \"green\" bond with a fixed 4.875% coupon, denominated in EUR, issued in January 2025, maturing 22 March 2040, annual coupon; non-callable."
   },
   "XS3200176298": {
     "name": "ROMANIA FX 6.5% OCT45 EUR",
@@ -253,8 +253,8 @@
     "status": "mapped",
     "source": "mot_bond",
     "ticker": null,
-    "asset_class": "Obbligazionario",
-    "asset_subclass": "Obbligazionario Governativo Romania",
-    "description": "Obbligazione sovrana della Romania a tasso fisso 6,5%, in EUR, emessa a ottobre 2025, con scadenza 7 ottobre 2045 e cedola annuale."
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - Romania Government",
+    "description": "Romanian sovereign bond with a fixed 6.5% coupon, denominated in EUR, issued in October 2025, maturing 7 October 2045, annual coupon."
   }
 }

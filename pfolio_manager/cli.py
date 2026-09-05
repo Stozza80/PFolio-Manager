@@ -1,9 +1,13 @@
 """CLI entry point: `python -m pfolio_manager.cli`.
 
-Orchestrates: scan raw_reports/ for new files (by content hash) -> detect broker -> parse
--> resolve FX -> upsert holdings + append snapshot -> archive the file. If no new files are
-found, refreshes quotes for all existing holdings instead. Always prints a structured summary
-(the portfolio-update skill relays this back to the user).
+Orchestrates against data/portfolio.db (SQLite): scan raw_reports/ for new files (by
+content hash) -> detect broker -> parse -> upsert instrument identity + overwrite that
+account's portfolio_history for today. If no new files are found, carries every
+account's latest known quantity/avg_cost_price forward to today instead. Either way,
+quotes.refresh_all() then runs for every instrument (quotations always come from the
+same online source, never a broker-stated price), and portfolio_history for today is
+revalued from those fresh quotations. Always prints a structured summary (the
+portfolio-update skill relays this back to the user).
 """
 from __future__ import annotations
 
@@ -12,7 +16,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from . import detect, quotes, store, util
+from . import db, detect, quotes, store, util
 from .parsers import PARSERS, ParserError
 
 RAW_REPORTS_DIR = Path("raw_reports")
@@ -36,14 +40,23 @@ def _archive_file(file_path: Path, processed_dir: Path) -> Path:
     return dest
 
 
-def run() -> int:
-    portfolio = store.load()
-    files = _scan_report_files(RAW_REPORTS_DIR)
+def _print_flagged(quote_summary: dict) -> None:
+    if quote_summary["unmapped"] or quote_summary["lookup_failed"]:
+        print("Strumenti da controllare in config/isin_ticker_map.json:")
+        for isin, name, status in quote_summary["flagged"]:
+            print(f"  - [{status}] {isin} {name}")
 
+
+def run() -> int:
+    db.init_db()
+    conn = db.get_connection()
+    as_of_date = util.market_as_of_date().isoformat()
+
+    files = _scan_report_files(RAW_REPORTS_DIR)
     new_files = []
     for f in files:
         file_hash = util.sha256_file(f)
-        if not store.is_already_ingested(portfolio, file_hash):
+        if not store.is_already_ingested(conn, file_hash):
             new_files.append((f, file_hash))
 
     if new_files:
@@ -54,53 +67,56 @@ def run() -> int:
             try:
                 broker = detect.detect_broker(file_path)
                 report = PARSERS[broker](file_path)
-                summary = store.ingest_report(portfolio, report, file_hash)
+                summary = store.ingest_report(conn, report, file_hash, as_of_date)
                 ingestion_summaries.append(summary)
                 _archive_file(file_path, PROCESSED_DIR)
             except (detect.DetectionError, ParserError) as exc:
                 errors.append((file_path.name, str(exc)))
 
-        quotes.enrich_metadata(portfolio["holdings"])
-        daily_snapshot = store.save_daily_snapshot(portfolio)
-        store.save(portfolio)
+        # Ingestion only wrote instrument identity/quantity/cost from the broker
+        # report; the price itself must always come from the same online source
+        # (never the broker-stated price), so quotations stay consistent day to day.
+        quote_summary = quotes.refresh_all(conn, as_of_date)
+        quotes.apply_curated_metadata(conn)
+        store.revalue_portfolio_history(conn, as_of_date)
+        conn.commit()
 
         print("\n=== Riepilogo ingestion ===")
         for s in ingestion_summaries:
             stated = s["stated_total_native"]
-            computed = s["computed_total_eur"]
-            mismatch = ""
-            if stated is not None:
-                diff = computed - stated
-                if abs(diff) > 0.5:
-                    mismatch = f"  [attenzione: differenza {diff:+.2f} tra totale calcolato e dichiarato dal broker]"
+            computed = store.portfolio_total_eur(conn, as_of_date)
             print(
                 f"- {s['broker']} ({s['account_id']}) al {s['as_of_date']}: "
-                f"{s['holdings_added']} nuovi, {s['holdings_updated']} aggiornati, "
-                f"totale calcolato EUR {computed:.2f} vs dichiarato {stated}{mismatch}"
+                f"{s['lines']} strumenti, totale portafoglio EUR {computed:.2f} "
+                f"(dichiarato dal broker per questo conto: {stated})"
             )
         if errors:
             print("\n=== File non elaborati (errore) ===")
             for name, msg in errors:
                 print(f"- {name}: {msg}")
+        print(
+            f"\nQuotazioni: ok {quote_summary['ok']}, non mappati {quote_summary['unmapped']}, "
+            f"lookup falliti {quote_summary['lookup_failed']}"
+        )
+        _print_flagged(quote_summary)
     else:
         print("Nessun nuovo file trovato in raw_reports/ — aggiorno solo le quotazioni.")
-        quote_summary = quotes.refresh_all(portfolio["holdings"])
-        quotes.enrich_metadata(portfolio["holdings"])
-        daily_snapshot = store.save_daily_snapshot(portfolio)
-        store.save(portfolio)
+        carried = store.carry_forward_all(conn, as_of_date)
+        quote_summary = quotes.refresh_all(conn, as_of_date)
+        quotes.apply_curated_metadata(conn)
+        store.revalue_portfolio_history(conn, as_of_date)
+        conn.commit()
 
-        print("\n=== Riepilogo refresh quotazioni ===")
-        print(f"Snapshot giornaliero salvato per il {daily_snapshot['as_of_date']}.")
+        total = store.portfolio_total_eur(conn, as_of_date)
+        print(f"\n=== Riepilogo refresh quotazioni ({as_of_date}) ===")
+        print(f"Posizioni riportate avanti: {carried}. Totale portafoglio EUR: {total:.2f}")
         print(
             f"ok: {quote_summary['ok']}, non mappati: {quote_summary['unmapped']}, "
             f"lookup falliti: {quote_summary['lookup_failed']}"
         )
-        if quote_summary["unmapped"] or quote_summary["lookup_failed"]:
-            print("Strumenti da controllare in config/isin_ticker_map.json:")
-            for h in portfolio["holdings"]:
-                if h.get("quote_status") in ("unmapped", "lookup_failed"):
-                    print(f"  - [{h['quote_status']}] {h.get('isin')} {h.get('instrument_name')}")
+        _print_flagged(quote_summary)
 
+    conn.close()
     return 0
 
 
