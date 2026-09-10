@@ -41,7 +41,7 @@ def parse_it_number(text: str) -> float:
 
 def parse_directa_extraction_date(text: str) -> datetime:
     """Parse Directa's "Data estrazione : 2026/09/03 18:14:36" metadata line."""
-    match = re.search(r"(\d{4}/\d{2}/\d{2}\s+\d{2}:\d{2}:\d{2})", text)
+    match = re.search(r"(\d{4}/\d{2}/\d{2}\s+\d{1,2}:\d{1,2}:\d{1,2})", text)
     if not match:
         raise ValueError(f"No extraction date found in: {text!r}")
     return datetime.strptime(match.group(1), "%Y/%m/%d %H:%M:%S")
