@@ -46,8 +46,11 @@ by SHA-256 against the `ingested_source` table):
   upserts instrument identity and **overwrites** (delete + reinsert) that
   account's `portfolio_history` rows for today with the report's quantity/avg_cost_price.
   The file is then archived to `raw_reports/processed/<date>/`. Accounts *not*
-  included in this batch are left untouched (they keep whatever date their last
-  known row has).
+  included in this batch are then carried forward to today too (same
+  `store.carry_forward_all()` call as the no-new-file branch below, idempotent via
+  `INSERT OR IGNORE` so it never touches the account(s) just ingested) — every
+  account must share the same latest date, since the API/dashboard reads "the
+  portfolio" as whatever's dated the single latest date in `portfolio_history`.
 - **No new file** → `store.carry_forward_all()` copies every (instrument, account)
   pair's latest known quantity/avg_cost_price forward into a new row dated today.
 

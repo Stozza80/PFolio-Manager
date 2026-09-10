@@ -2,12 +2,15 @@
 
 Orchestrates against data/portfolio.db (SQLite): scan raw_reports/ for new files (by
 content hash) -> detect broker -> parse -> upsert instrument identity + overwrite that
-account's portfolio_history for today. If no new files are found, carries every
-account's latest known quantity/avg_cost_price forward to today instead. Either way,
-quotes.refresh_all() then runs for every instrument (quotations always come from the
-same online source, never a broker-stated price), and portfolio_history for today is
-revalued from those fresh quotations. Always prints a structured summary (the
-portfolio-update skill relays this back to the user).
+account's portfolio_history for today. Any account not covered by today's report(s)
+still gets carried forward to today (same as the no-new-file path) so every account
+shares one current date - the dashboard reads the single latest date as "the
+portfolio". If no new files are found, carries every account's latest known
+quantity/avg_cost_price forward to today instead. Either way, quotes.refresh_all()
+then runs for every instrument (quotations always come from the same online source,
+never a broker-stated price), and portfolio_history for today is revalued from those
+fresh quotations. Always prints a structured summary (the portfolio-update skill
+relays this back to the user).
 """
 from __future__ import annotations
 
@@ -72,6 +75,11 @@ def run() -> int:
                 _archive_file(file_path, PROCESSED_DIR)
             except (detect.DetectionError, ParserError) as exc:
                 errors.append((file_path.name, str(exc)))
+
+        # Accounts not covered by today's report(s) still need a row dated today so
+        # the whole portfolio shares one current date (carry_forward_all is
+        # idempotent, so accounts just ingested above are left untouched).
+        store.carry_forward_all(conn, as_of_date)
 
         # Ingestion only wrote instrument identity/quantity/cost from the broker
         # report; the price itself must always come from the same online source
