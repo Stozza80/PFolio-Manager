@@ -133,12 +133,20 @@ def _refresh_instrument(
         # nominal face value, so market_value = quantity * (price / 100) — confirmed
         # against the broker reports, which reproduce their stated value this way.
         price = raw_price / 100 if raw_price is not None else None
+    elif source == "eurotlx_bond":
+        quote_ref = f"EUROTLX:{isin}"
+        raw_price, price_currency = scraper.fetch_eurotlx_bond_quote(isin)
+        # Same per-100-nominal convention as mot_bond above.
+        price = raw_price / 100 if raw_price is not None else None
     elif source == "borsaitaliana_fund":
         fund_code = entry.get("ticker")  # holds the Borsa Italiana internal fund code
         if not fund_code:
             return "unmapped", mapping_changed
         quote_ref = f"BIT-FONDI:{fund_code}"
         price, price_currency = scraper.fetch_borsaitaliana_fund_quote(fund_code)
+    elif source == "borsaitaliana_etf":
+        quote_ref = f"BIT-ETF:{isin}"
+        price, price_currency = scraper.fetch_borsaitaliana_etf_quote(isin)
     elif source == "stockevents":
         quote_ref = f"stockevents:{isin}"
         price, price_currency = scraper.fetch_stockevents_quote(isin)

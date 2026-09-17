@@ -223,6 +223,10 @@ __marimo__/
 /data/*
 !/data/.gitkeep
 
+# PFolio-Manager: downloaded third-party datasets and generated backtest output
+/analysis/data/*
+/analysis/output/*
+
 # Safety net: stray broker export files must never live at repo root
 /*.xlsx
 /*.xls

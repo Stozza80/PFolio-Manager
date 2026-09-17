@@ -28,11 +28,22 @@
     "asset_subclass": "Bonds - Italy Government (Target Maturity Fund)",
     "description": "BNP Paribas 4Italy 2028, a target-maturity bond fund by BNP Paribas AM France, investing in Italian government bonds (BTPs) with a 5-year horizon to 2028, with income distribution linked to the yield of the reference BTPs."
   },
+  "GB00B1VWPJ53": {
+    "name": "United Kingdom Fx 4.5% Dec42 Gbp",
+    "notes": "user-supplied, verified working via Borsa Italiana EuroTLX bond page; trades in GBP, converted to holding currency",
+    "status": "mapped",
+    "source": "eurotlx_bond",
+    "ticker": null,
+    "asset_class": "Bonds",
+    "asset_subclass": "Bonds - UK Government",
+    "description": "UK Gilt, 4.5% coupon paid semi-annually, maturing December 2042."
+  },
   "IE000MINO564": {
     "name": "L&G EM Government Bond (USD) 0-5 Year Screened UCITS ETF EUR Hdg",
-    "notes": "user-supplied, verified working",
+    "notes": "switched from yfinance (.SG, possibly delisted there) to Borsa Italiana ETF page per user-supplied URL",
     "status": "mapped",
-    "ticker": "IE000MINO564.SG",
+    "source": "borsaitaliana_etf",
+    "ticker": null,
     "asset_class": "Bonds",
     "asset_subclass": "Bonds - Emerging Markets Government (USD, EUR Hedged)",
     "description": "L&G ETF tracking the J.P. Morgan ESG EMBI Global Diversified Short-Term index, investing in USD-denominated emerging-market government bonds maturing within 5 years, with ESG screening and EUR currency hedging."

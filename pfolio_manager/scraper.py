@@ -1,14 +1,20 @@
 """Price scraping fallback for instruments not available on Yahoo Finance.
 
-Two Borsa Italiana sources, both static HTML (no JS execution needed) and confirmed
+Four Borsa Italiana sources, all static HTML (no JS execution needed) and confirmed
 not blocked by robots.txt:
 - MOT "euro-obbligazioni" bond pages (`fetch_mot_bond_quote`), ISIN-parameterized —
   works for Italian and foreign government/corporate bonds admitted to that segment.
   Prices are quoted per 100 nominal, per MOT convention — the caller must divide
   accordingly when computing a market value (see quotes.py).
+- EuroTLX bond pages (`fetch_eurotlx_bond_quote`), ISIN-parameterized (URL is
+  `.../eurotlx/scheda/{isin}-ETLX.html`) — a separate bond segment from MOT, same
+  per-100-nominal convention, for bonds not admitted to MOT (e.g. some foreign
+  government bonds trading in their own currency).
 - Fund detail pages (`fetch_borsaitaliana_fund_quote`), keyed by Borsa Italiana's own
   internal fund code rather than ISIN (these pages aren't ISIN-parameterized) — the
   code has to be found once per instrument (e.g. from the page URL) and curated.
+- ETF detail pages (`fetch_borsaitaliana_etf_quote`), ISIN-parameterized (URL is
+  `.../scheda/{isin}-ETFP.html`) — used for ETFs not reliably priced on Yahoo Finance.
 
 A third source, stockevents.app (`fetch_stockevents_quote`), is ISIN-parameterized
 (`/stock/{isin}.FUND`) and embeds the price in a static schema.org FAQPage JSON-LD block
@@ -96,6 +102,45 @@ def fetch_mot_bond_quote(isin: str) -> tuple[Optional[float], Optional[str]]:
     return price, currency
 
 
+EUROTLX_BOND_URL = "https://www.borsaitaliana.it/borsa/obbligazioni/eurotlx/scheda/{isin}-ETLX.html"
+EUROTLX_PRICE_LABEL = "Prezzo ultimo contratto"
+EUROTLX_CURRENCY_LABEL = "Valuta di negoziazione"
+
+
+def fetch_eurotlx_bond_quote(isin: str) -> tuple[Optional[float], Optional[str]]:
+    """Return (last_contract_price, trading_currency) for a bond on Borsa Italiana's
+    EuroTLX segment, or (None, None) if not found/not listed there.
+
+    Same per-100-nominal convention as the MOT page (see `fetch_mot_bond_quote`) — the
+    caller must divide accordingly. Unlike MOT, the URL is ISIN-parameterized directly
+    in the path (`.../scheda/{isin}-ETLX.html`) rather than a query param, and the
+    label text is differently-cased ("Prezzo ultimo contratto" vs. MOT's "Prezzo Ultimo
+    Contratto") — case-sensitive matching in `_labelled_value` means the two can't share
+    label constants.
+    """
+    url = EUROTLX_BOND_URL.format(isin=isin)
+    try:
+        resp = requests.get(
+            url, params={"lang": "it"}, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT
+        )
+        resp.raise_for_status()
+    except requests.RequestException:
+        return None, None
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    price_text = _labelled_value(soup, EUROTLX_PRICE_LABEL)
+    currency = _labelled_value(soup, EUROTLX_CURRENCY_LABEL)
+    if price_text is None:
+        return None, None
+
+    try:
+        price = float(price_text.replace(".", "").replace(",", "."))
+    except ValueError:
+        return None, None
+
+    return price, currency
+
+
 FUND_DETAIL_URL = "https://www.borsaitaliana.it/borsa/fondi/dettaglio/{code}.html"
 FUND_PRICE_COLUMN = "Ultima"
 FUND_CURRENCY_COLUMN = "Valuta"
@@ -137,6 +182,43 @@ def fetch_borsaitaliana_fund_quote(fund_code: str) -> tuple[Optional[float], Opt
     try:
         price = float(price_text.replace(".", "").replace(",", "."))
     except ValueError:
+        return None, None
+
+    return price, currency
+
+
+ETF_DETAIL_URL = "https://www.borsaitaliana.it/borsa/etf/scheda/{isin}-ETFP.html"
+ETF_PRICE_LABEL = "Prezzo di riferimento"
+ETF_CURRENCY_LABEL = "Valuta di Denominazione"
+
+
+def fetch_borsaitaliana_etf_quote(isin: str) -> tuple[Optional[float], Optional[str]]:
+    """Return (last_price, currency) for an ETF on Borsa Italiana's ETF detail page, or
+    (None, None) if not found/not listed there.
+
+    Unlike the fund detail page, this one IS ISIN-parameterized (URL is
+    `.../scheda/{isin}-ETFP.html`), so no per-instrument code needs curating. The price
+    cell reads e.g. "11,88 - 14/09/26 17.55.00" (price, date, time joined by NBSPs) —
+    only the leading price token is used.
+    """
+    url = ETF_DETAIL_URL.format(isin=isin)
+    try:
+        resp = requests.get(
+            url, params={"lang": "it"}, headers={"User-Agent": USER_AGENT}, timeout=REQUEST_TIMEOUT
+        )
+        resp.raise_for_status()
+    except requests.RequestException:
+        return None, None
+
+    soup = BeautifulSoup(resp.text, "html.parser")
+    price_text = _labelled_value(soup, ETF_PRICE_LABEL)
+    currency = _labelled_value(soup, ETF_CURRENCY_LABEL)
+    if price_text is None:
+        return None, None
+
+    try:
+        price = float(price_text.split()[0].replace(".", "").replace(",", "."))
+    except (ValueError, IndexError):
         return None, None
 
     return price, currency
