@@ -125,9 +125,21 @@ def ingest_report(
 def carry_forward_all(conn: sqlite3.Connection, as_of_date: str) -> int:
     """Refresh-only path: copy every (instrument, account) pair's latest known
     quantity/avg_cost_price forward into a new `as_of_date` row (market_value left
-    NULL, filled in later by revalue_portfolio_history). Idempotent: pairs that
-    already have a row for `as_of_date` are left untouched.
+    NULL, filled in later by revalue_portfolio_history).
+
+    Skips accounts that already have *any* row for `as_of_date` (i.e. accounts just
+    ingested this run) entirely, rather than filtering pair by pair — otherwise a
+    position dropped from a fresh broker report (sold) would have no row for
+    `as_of_date` yet and would get silently resurrected here with its stale quantity.
     """
+    touched_accounts = {
+        row[0]
+        for row in conn.execute(
+            "SELECT DISTINCT account_id FROM portfolio_history WHERE date = ?",
+            (as_of_date,),
+        ).fetchall()
+    }
+
     latest_rows = conn.execute(
         """
         SELECT ph.instrument_id, ph.account_id, ph.quantity, ph.avg_cost_price
@@ -145,7 +157,10 @@ def carry_forward_all(conn: sqlite3.Connection, as_of_date: str) -> int:
         (as_of_date,),
     ).fetchall()
 
+    carried = 0
     for instrument_id, account_id, quantity, avg_cost_price in latest_rows:
+        if account_id in touched_accounts:
+            continue
         conn.execute(
             """
             INSERT OR IGNORE INTO portfolio_history
@@ -155,7 +170,8 @@ def carry_forward_all(conn: sqlite3.Connection, as_of_date: str) -> int:
             """,
             (instrument_id, account_id, as_of_date, quantity, avg_cost_price),
         )
-    return len(latest_rows)
+        carried += 1
+    return carried
 
 
 def revalue_portfolio_history(
