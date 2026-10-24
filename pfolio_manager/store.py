@@ -123,14 +123,23 @@ def ingest_report(
 
 
 def carry_forward_all(conn: sqlite3.Connection, as_of_date: str) -> int:
-    """Refresh-only path: copy every (instrument, account) pair's latest known
-    quantity/avg_cost_price forward into a new `as_of_date` row (market_value left
-    NULL, filled in later by revalue_portfolio_history).
+    """Refresh-only path: copy each account's latest known snapshot (every
+    instrument it held as of that account's own most recent date) forward into a
+    new `as_of_date` row per instrument (market_value left NULL, filled in later by
+    revalue_portfolio_history).
+
+    Carrying forward per-account's single latest date — rather than each
+    (instrument, account) pair's own latest date independently — matters because a
+    broker re-ingestion deletes and reinserts that account's entire row set for its
+    date, so an instrument absent from the new report (sold) simply has no row on
+    that date. Using the pair's own latest date would let a later carry-forward
+    reach past that date to an older row and resurrect the sold position; anchoring
+    on the account's latest date means a sold instrument, having no row there, is
+    never carried forward again.
 
     Skips accounts that already have *any* row for `as_of_date` (i.e. accounts just
-    ingested this run) entirely, rather than filtering pair by pair — otherwise a
-    position dropped from a fresh broker report (sold) would have no row for
-    `as_of_date` yet and would get silently resurrected here with its stale quantity.
+    ingested this run) entirely, so carry-forward never touches a just-ingested
+    account's data.
     """
     touched_accounts = {
         row[0]
@@ -145,13 +154,12 @@ def carry_forward_all(conn: sqlite3.Connection, as_of_date: str) -> int:
         SELECT ph.instrument_id, ph.account_id, ph.quantity, ph.avg_cost_price
         FROM portfolio_history ph
         INNER JOIN (
-            SELECT instrument_id, account_id, MAX(date) AS max_date
+            SELECT account_id, MAX(date) AS max_date
             FROM portfolio_history
             WHERE date < ?
-            GROUP BY instrument_id, account_id
+            GROUP BY account_id
         ) latest
-        ON ph.instrument_id = latest.instrument_id
-        AND ph.account_id = latest.account_id
+        ON ph.account_id = latest.account_id
         AND ph.date = latest.max_date
         """,
         (as_of_date,),
